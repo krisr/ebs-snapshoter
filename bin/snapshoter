@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+require File.expand_path(
+    File.join(File.dirname(__FILE__), %w[.. lib snapshoter]))
+
+require 'optparse'
+
+# Options
+# -------
+
+config_file = '/etc/snapshoter.yml'
+verbose     = false
+
+# Option Parsing
+# --------------
+
+opts = OptionParser.new { |opts|
+  opts.banner = "Usage: snapshoter [options]"
+  
+  opts.separator ""
+  opts.separator "Specific options:"
+  
+  opts.on("-c", "--config FILE",
+          "The configuration to use (default #{config_file})") do |file|
+    config_file = file
+  end
+  
+  opts.on("-v", "--verbose", "Run with verbose logging") do
+    verbose = true
+  end
+  
+  opts.separator ""
+  opts.separator "Common options:"
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+
+  opts.on_tail("--version", "Show version") do
+    puts Snapshoter.version
+    exit
+  end
+}.parse!(ARGV)
+
+# Run
+# ---
+
+config   = Snapshoter::Config.read(config_file)
+provider = Snapshoter::Provider::EC2Provider.new(config)
+manager  = Snapshoter::Manager.new(config, provider)
+manager.run

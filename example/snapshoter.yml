@@ -1,0 +1,14 @@
+aws_public_key: ZSdfslkfjsdf...
+aws_private_key: 3f23knlkvjsdf...
+
+vol-VVVV1113:
+  mount_point: /data1
+  frequency: daily
+  freeze_mysql: true
+  mysql_user: root
+  mysql_password: ZD3D2112
+  keep: 20
+  
+vol-BBBBB1112:
+  mount_point: /data2
+  frequency: weekly
