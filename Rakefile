@@ -1,34 +1,61 @@
-# Look in the tasks/setup.rb file for the various options that can be
-# configured in this Rakefile. The .rake files in the tasks directory
-# are where the options are used.
+require 'rubygems'
+require 'rake'
 
 begin
-  require 'bones'
-  Bones.setup
-rescue LoadError
-  begin
-    load 'tasks/setup.rb'
-  rescue LoadError
-    raise RuntimeError, '### please install the "bones" gem ###'
+  require 'jeweler'
+  Jeweler::Tasks.new do |s|
+    s.name = "ebs-snapshoter"
+    s.executables = "snapshoter"
+    s.summary = "Provides EBS snapshot automation that can be configured and run on an EC2 instance."
+    s.email = "kristopher.rasmussen@gmail.com"
+    s.homepage = "http://github.com/krisr/ebs-snapshoter"
+    s.description = "Provides EBS snapshot automation that can be configured and run on an EC2 instance."
+    s.authors = ["Kris Rasmussen"]
+    s.files =  FileList["[A-Z]*", "{bin,generators,lib,test}/**/*", 'lib/jeweler/templates/.gitignore']
+    s.add_dependency 'right_aws'
+    s.add_dependency 'mysql'
   end
+rescue LoadError
+  puts "Jeweler, or one of its dependencies, is not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
 end
 
-ensure_in_path 'lib'
-require 'snapshoter'
+require 'lib/snapshoter'
 
 task :default => 'spec:run'
 
-PROJ.name = 'snapshoter'
-PROJ.authors = 'Kris Rasmussen'
-PROJ.email = 'Kris Rasmussen'
-PROJ.url = 'http://www.dreamthis.com'
-PROJ.version = Snapshoter::VERSION
-PROJ.rubyforge.name = 'snapshoter'
-PROJ.spec.opts << '--color'
+require 'rake/testtask'
+Rake::TestTask.new(:test) do |test|
+  test.libs << 'lib' << 'test'
+  test.pattern = 'test/**/test_*.rb'
+  test.verbose = true
+end
 
-# use hanna template for rdoc
-require 'hanna/rdoctask'
+begin
+  require 'rcov/rcovtask'
+  Rcov::RcovTask.new do |test|
+    test.libs << 'test'
+    test.pattern = 'test/**/test_*.rb'
+    test.verbose = true
+  end
+rescue LoadError
+  task :rcov do
+    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
+  end
+end
 
-depend_on 'right_aws'
+task :test => :check_dependencies
+
+task :default => :test
+
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  version = File.exist?('VERSION') ? File.read('VERSION') : ""
+
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "foo #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
+end
+
 
 # EOF
